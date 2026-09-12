@@ -1,21 +1,20 @@
-# todo.md（Active Sprint: Phase 1）
+# todo.md（Active Sprint: Phase 2）
 
-## Phase 0：環境建置與基準驗證 — ✅ 已完成關閉
-- [x] git repo 初始化 / 專案目錄骨架 / .gitignore
-- [x] requirements-nano.txt（鎖定版本）
-- [x] 相容性驗證：torch==2.2.2 支援的 Python 版本範圍（3.9–3.12，macOS Intel）
-- [x] 相容性驗證：修好 numpy>=2.0 vs torch==2.2.2 的 ABI 問題
-- [x] 相容性驗證：transformers==4.57.6 所需元件可正常 import
-- [x] trainer/bench_cpu.py（proxy 效能基準腳本）
-- [x] 在真實 MacBook Pro (Mid 2014) 上驗證安裝與執行，全程無需編譯，無新增 ERR
-- [x] 依真實數字補完 MEM-0001，正式關閉 Phase 0
+## Phase 0：環境建置與基準驗證 — ✅ 已完成（branch: `phase-0`）
+## Phase 1：骨架與規範 — ✅ 已完成（branch: `phase-1-scaffold-and-conventions`，待 merge）
+- [x] ruff + pytest 設定（pyproject.toml, requirements-dev.txt）
+- [x] TDD 第一輪：NanoMindConfig（11 tests, Red→Green→Refactor）
+- [x] 修正 bench_cpu.py import 順序（ruff --fix）
+- [x] ERR: git add -A 誤加 .venv-dev 的教訓與修正
+- [x] docs/reports/phase-1.md
 
-## Phase 1：骨架與規範（現在開始）
-- [ ] 選定並設定 lint 工具（ruff）
-- [ ] pytest 骨架 + pytest.ini / pyproject.toml 設定
-- [ ] TDD 練習第一輪：`tests/test_config.py`（Red）→ 最小可行的 config
-      dataclass（Green）→ refactor
-- [ ] （選配）GitHub Actions CI：pytest + ruff，只在 push 時跑，不含任何
-      部署/雲端資源
-- [ ] 更新 README「開發規範」章節，補上完整的規範取捨對照表（從規劃階段的
-      對話內容整理進來，正式成為專案文件而不只是聊天記錄）
+## Phase 2：Tokenizer + 資料裁切（下一步，尚未開始）
+- [ ] 開新 branch `phase-2-tokenizer-and-data`
+- [ ] 下載 minimind 官方 pretrain_t2t_mini.jsonl / sft_t2t_mini.jsonl
+- [ ] 寫 `scripts/sample_dataset.py`（固定 seed 抽樣）
+- [ ] 產出 `dataset/nano_pretrain.jsonl` / `dataset/nano_sft.jsonl`
+- [ ] `dataset/raw/MANIFEST.md`（來源、checksum、抽樣方法記錄）
+- [ ] 訓練 Tier1 用的小 vocab BPE tokenizer（沿用 minimind
+      train_tokenizer.py 邏輯改造）
+- [ ] tokenizer round-trip 測試（TDD）
+- [ ] MEM-0002：tokenizer 策略決策記錄

@@ -18,11 +18,11 @@ docs/reports/phase-0.md），但沙盒不是目標硬體。真正要記錄進
 MEM-0001 的數字，必須是您在您自己的 MacBook Pro (Mid 2014) 上
 實際跑出來的結果。
 """
+import argparse
 import os
+import platform
 import sys
 import time
-import platform
-import argparse
 from dataclasses import dataclass
 
 import torch
