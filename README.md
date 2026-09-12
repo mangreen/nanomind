@@ -14,9 +14,11 @@ DeepSeek-V4.1 技術報告（詳見 `docs/concept-notes/`）。
 macOS Big Sur 11.7.11）。**純 CPU 訓練，無 CUDA/MPS 加速**。所有規模與時間
 預算都是針對這個限制設計的，細節見 `docs/decisions/MEM-0001-*.md`。
 
-## 目前狀態：Phase 0（環境建置與基準驗證）
+## 目前狀態：Phase 0 已完成 ✅，進行中：Phase 1（骨架與規範）
 
-進度與待辦見 `todo.md` 與 `docs/reports/phase-0.md`。
+Phase 0 已在真實目標硬體（MacBook Pro Mid 2014, macOS Big Sur）驗證通過，
+詳見 `docs/reports/phase-0.md` 與 `docs/decisions/MEM-0001-*.md`。
+進度與待辦見 `todo.md`。
 
 ## 開發規範
 

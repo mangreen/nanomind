@@ -1,5 +1,20 @@
 # Phase 0 報告：環境建置與基準驗證
 
+## ✅ 狀態：已關閉（2026-09-12）
+
+在 MacBook Pro (Mid 2014, macOS Big Sur 11.7.11) 上實測：
+`pip install -r requirements-nano.txt` 全程下載預編譯 wheel、無需編譯；
+`trainer/bench_cpu.py` 執行成功、無觸發任何相容性警告。真實 tier1 proxy
+成本約 0.52 sec/step（~8.65 分鐘/1000 steps），tier2 proxy 約 3.55
+sec/step（~59 分鐘/1000 steps）——比原本擔心的更寬裕，Phase 4/6/7/8/10
+的時間預算暫不需要縮減規模，待 Phase 3 真實模型出現後再精算一次。
+完整數字見 `docs/experiments/hardware-baseline.md`，決策記錄見
+`docs/decisions/MEM-0001-*.md`。
+
+---
+
+（以下為原始 Phase 0 執行報告，保留作為記錄）
+
 ## 做了什麼
 
 1. **專案骨架**：git repo、目錄結構（`docs/{decisions,errors,skills,

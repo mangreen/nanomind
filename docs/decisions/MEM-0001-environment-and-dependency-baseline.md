@@ -65,16 +65,34 @@ tokenizers==0.22.2
 純 Python JSONL 讀取的理由）、`wandb`、`streamlit`、`trl`、`peft`、
 `modelscope`、`sentence_transformers`、`jieba` 等本專案 scope 不需要的套件。
 
-### 待辦（需要在真正的 macOS 機器上完成，我這邊的 Linux 沙盒無法代勞）
-- [ ] 在 MacBook Pro (Mid 2014) 上，用 pyenv 或官方安裝檔裝 Python 3.10 或
-      3.11
-- [ ] `python3 -m venv .venv && source .venv/bin/activate`
-- [ ] `pip install -r requirements-nano.txt`
-- [ ] 確認 `pip install` 過程沒有出現需要編譯（compile from source）的警告
-      （若有，代表某個套件缺 macOS Intel 的 prebuilt wheel，需要另外處理）
-- [ ] `python trainer/bench_cpu.py`，把終端機輸出與
-      `docs/experiments/hardware-baseline.md` 的內容回報回來，我會補進本
-      文件的「已驗證的事實」區塊，正式關閉 Phase 0
+### ✅ 目標硬體驗證結果（2026-09-12，MacBook Pro Mid 2014 / macOS Big Sur 11.7.11）
+
+- 使用 `pyenv virtualenv 3.11.14 nanomind` 建立環境，`pip install -r
+  requirements-nano.txt` **全程都是下載預編譯 wheel，沒有任何一個套件
+  需要現場編譯**（torch/numpy/transformers/tokenizers 皆有 macOS Intel
+  x86_64 wheel），完全符合預期，MEM-0001 前段的版本鎖定判斷成立，
+  **不需要額外的 ERR 記錄**。
+- `python trainer/bench_cpu.py` 執行成功，無需觸發
+  `check_numpy_torch_compat()` 的任何警告分支。
+- 硬體回報 `cpu_count_logical=4`（雙核 i7 + hyperthreading）、
+  `torch_num_threads=2`（torch 預設抓到實體核心數），與硬體規格相符。
+- 完整 proxy 效能數字見 `docs/experiments/hardware-baseline.md`：
+
+  | Tier | sec/step | tokens/sec | est. min / 1000 steps |
+  |---|---|---|---|
+  | tier0 | 0.0315 | 32,525 | 0.52 |
+  | tier1 | 0.5188 | 7,896 | 8.65 |
+  | tier2 | 3.5518 | 1,730 | 59.2 |
+
+### 對後續 Phase 的初步意義（之後 Phase 3/4 有了真實模型會重新精算）
+以 Tier1 為例：若 `nano_pretrain.jsonl` 抓在 ~10MB 文字、vocab~1536，
+粗估一個 epoch 落在數百到一千多個 step，代表**單次 Tier1 預訓練跑 2-3
+個 epoch，很可能落在 15-30 分鐘級距**，遠低於原本擔心的「要跑好幾小時」。
+Tier2 每 1000 step 要近 1 小時，仍在「放著跑一段時間」的可接受範圍內，
+不需要現在就縮減 Tier2 規模，實際是否要跑、跑多少 step，留到 Phase 10
+用 Phase 3/4 的真實數字重新確認。
+
+### Phase 0 狀態：**已關閉**（所有待辦事項皆完成，見上）
 
 ## When to Use
 任何時候要重新建置 NanoMind 開發環境（換機器、環境壞掉重裝），都先看這份
