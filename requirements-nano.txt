@@ -1,3 +1,4 @@
 # NanoMind 精簡相依套件清單（持續補充中，見 git log 了解每個版本鎖定的原因）
 
 torch==2.2.2          # macOS Intel(x86_64) 最後支援版本，2.3.0 起官方不再提供 mac x86_64 wheel
+numpy==1.26.4          # 關鍵：需 <2.0，否則 torch==2.2.2 的 numpy interop 會壞掉，見 ERR-20260912
