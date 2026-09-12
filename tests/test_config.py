@@ -93,7 +93,7 @@ class TestNanoMindConfigValidation:
         with pytest.raises(ValueError, match="num_key_value_heads"):
             NanoMindConfig(
                 vocab_size=512,
-                hidden_size=64,
+                hidden_size=320,  # 320 % 5 == 0，先讓 hidden_size 的檢查過關
                 num_hidden_layers=2,
                 num_attention_heads=5,
                 num_key_value_heads=2,  # 5 % 2 != 0，GQA 分組除不盡
