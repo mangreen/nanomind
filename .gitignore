@@ -2,7 +2,7 @@
 __pycache__/
 *.pyc
 .venv/
-.venv-test/
+.venv*/
 *.egg-info/
 
 # --- NanoMind 大型/衍生資料，不進 git ---
