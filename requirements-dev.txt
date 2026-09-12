@@ -1,0 +1,5 @@
+# 開發工具，不影響 requirements-nano.txt（訓練執行期）的相依關係
+# 版本已驗證有 macOS Intel(x86_64) + Python 3.11 的 wheel
+
+ruff==0.16.7
+pytest==9.1.1
