@@ -1,0 +1,23 @@
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+.venv-test/
+*.egg-info/
+
+# --- NanoMind 大型/衍生資料，不進 git ---
+dataset/raw/*.jsonl
+dataset/*.jsonl
+!dataset/raw/.gitkeep
+out/
+checkpoints/
+*.pt
+*.bin
+*.safetensors
+
+# --- 下載暫存 ---
+*.whl
+/tmp/
+
+# --- OS ---
+.DS_Store
