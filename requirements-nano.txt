@@ -2,3 +2,5 @@
 
 torch==2.2.2          # macOS Intel(x86_64) 最後支援版本，2.3.0 起官方不再提供 mac x86_64 wheel
 numpy==1.26.4          # 關鍵：需 <2.0，否則 torch==2.2.2 的 numpy interop 會壞掉，見 ERR-20260912
+transformers==4.57.6   # 與 torch==2.2.2 + numpy==1.26.4 搭配已驗證可正常 import（含 MoeCausalLMOutputWithPast）
+tokenizers==0.22.2     # 由上面 transformers 版本解析出的相容版本，明確鎖定以求可重現
