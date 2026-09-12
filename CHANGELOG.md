@@ -23,4 +23,18 @@
   （~8.65 分鐘/1000 steps），tier2 proxy ~3.55 sec/step
   （~59 分鐘/1000 steps）——時間預算比預期寬裕
 
-## [Unreleased] - Phase 1
+## [Phase 1] - 2026-09-12 - 骨架與規範（完成，待 merge）
+
+### Added
+- `pyproject.toml`（ruff + pytest 設定）、`requirements-dev.txt`
+- `nanomind/config.py`：`NanoMindConfig`（TDD 完整走過 Red→Green→Refactor）
+- `tests/test_config.py`：11 個測試
+- `CLAUDE.md`：專案規範/工作流程說明文件
+- `docs/errors/ERR-20260912-git-add-dash-a-staged-venv.md`
+
+### Fixed
+- `bench_cpu.py` import 順序（ruff --fix）
+- `.gitignore` 虛擬環境規則改用萬用字元，修正 `git add -A` 誤加
+  `.venv-dev/` 的問題
+
+## [Unreleased] - Phase 2
