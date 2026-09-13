@@ -1,7 +1,7 @@
 # MEM: 環境與相依套件版本鎖定
 Date: 2026-09-12
 Status: Approved
-Tags: [environment, dependencies, macos-intel, phase-0]
+Tags: [environment, dependencies, macos-intel, phase-0-env-setup]
 
 ## Summary
 NanoMind 開發機是 2014 年 13" MacBook Pro（雙核 Intel i7 3GHz、16GB RAM、

@@ -17,7 +17,7 @@ macOS Big Sur 11.7.11）。**純 CPU 訓練，無 CUDA/MPS 加速**。所有規�
 ## 目前狀態：Phase 0 已完成 ✅，進行中：Phase 1（骨架與規範）
 
 Phase 0 已在真實目標硬體（MacBook Pro Mid 2014, macOS Big Sur）驗證通過，
-詳見 `docs/reports/phase-0.md` 與 `docs/decisions/MEM-0001-*.md`。
+詳見 `docs/reports/phase-0-env-setup.md` 與 `docs/decisions/MEM-0001-*.md`。
 進度與待辦見 `todo.md`。
 
 ## 開發規範

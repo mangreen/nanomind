@@ -14,7 +14,7 @@ step 大概要花多久。目的不是精確模擬 RoPE/GQA attention 的真實�
 會把結果寫入 docs/experiments/hardware-baseline.md（同時印到終端機）。
 
 ⚠️ 這支腳本本身已經在 Linux 沙盒環境驗證過可以正常執行（見
-docs/reports/phase-0.md），但沙盒不是目標硬體。真正要記錄進
+docs/reports/phase-0-env-setup.md），但沙盒不是目標硬體。真正要記錄進
 MEM-0001 的數字，必須是您在您自己的 MacBook Pro (Mid 2014) 上
 實際跑出來的結果。
 """
