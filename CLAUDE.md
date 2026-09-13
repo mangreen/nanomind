@@ -34,8 +34,8 @@ K6壓測/機密管理等等級的規範已被刻意簡化或整段捨棄**。完
 - **每個 Phase 開一個新 branch**，命名 `phase-N-<簡短描述>`
   （例：`phase-1-scaffold-and-conventions`）。
 - 不要直接在 `master` 上做開發。`master` 只接受 phase 分支的 merge。
-  （`phase-0` 是例外：當時還沒訂出這個規則，是完成後才用
-  `git branch phase-0` 做的事後快照。）
+  （`phase-0-env-setup` 是例外：當時還沒訂出這個規則，是完成後才用
+  `git branch phase-0-env-setup` 做的事後快照。）
 - Phase 內的工作照常用下面的語意化 commit 逐步累積，**不要囤積成一個
   大 commit 最後才交**。
 - Phase 完成、經確認後，用 `git merge --no-ff phase-N-xxx` 合併回
@@ -94,7 +94,7 @@ Ref: MEM-xxxx / ERR-xxxx（如果適用）
 
 | Phase | 內容 | 狀態 |
 |---|---|---|
-| 0 | 環境建置與基準驗證 | ✅ 已完成（branch: `phase-0`） |
+| 0 | 環境建置與基準驗證 | ✅ 已完成（branch: `phase-0-env-setup`） |
 | 1 | 骨架與規範（ruff + pytest + TDD 第一輪：NanoMindConfig） | 進行中 |
 | 2 | Tokenizer + 資料裁切（自訓練小 vocab，裁切 minimind 官方資料集） | 未開始 |
 | 3 | NanoMind 模型架構（vendor 並簡化 minimind，tier0/1/2 config） | 未開始 |
