@@ -21,6 +21,7 @@ import json
 
 from nanomind.sampling import (
     compute_sha256,
+    estimate_line_count_for_target_size,
     reservoir_sample_lines,
     write_manifest_entry,
 )
@@ -113,7 +114,45 @@ class TestComputeSha256:
         assert compute_sha256(path) == expected
 
 
-class TestWriteManifestEntry:
+class TestEstimateLineCountForTargetSize:
+    """使用者通常心裡想的是「我要大約 10MB 的資料」，而不是「我要抽
+    23,481 行」——這組函式負責把「目標檔案大小」換算成「該抽幾行」，
+    讓使用者不用自己心算平均每行幾個 bytes。
+    """
+
+    def test_estimates_reasonable_line_count_for_uniform_lines(self, tmp_path):
+        # 造一個「每一行都剛好 100 bytes（含換行字元）」的檔案，這樣
+        # 平均行長度是已知的，可以直接驗證估算結果準不準。
+        path = tmp_path / "uniform.jsonl"
+        line_content = "x" * 99 + "\n"  # 99 個字元 + 1 個換行 = 100 bytes
+        with open(path, "w", encoding="utf-8") as f:
+            for _ in range(1000):
+                f.write(line_content)
+        # 目標 10,000 bytes，每行 100 bytes，理論上應該抓約 100 行。
+        result = estimate_line_count_for_target_size(path, target_bytes=10_000)
+        # 用「合理範圍」而不是「剛好等於」來斷言，因為這是機率估算，
+        # 不是精確計算；只要落在合理誤差範圍內就算正確。
+        assert 80 <= result <= 120
+
+    def test_handles_file_smaller_than_probe_window_without_crashing(self, tmp_path):
+        # 邊界情況：如果檔案本身的行數，比「用來估算平均行長度」的探測
+        # 樣本數還少（例如檔案只有 10 行，但探測樣本預設看前 5000 行），
+        # 探測邏輯必須能正常在檔案結尾停下來，不能因為「想讀第 5000 行
+        # 但檔案沒有那麼多行」而崩潰或卡住。
+        path = tmp_path / "small.jsonl"
+        with open(path, "w", encoding="utf-8") as f:
+            for i in range(10):
+                f.write(f"line-{i}\n")
+        result = estimate_line_count_for_target_size(path, target_bytes=10_000_000)
+        # 檔案平均每行約 8 bytes，目標 10,000,000 bytes，理論上會估出
+        # 一個遠大於檔案實際行數（10 行）的數字——這是預期行為，因為這個
+        # 函式只負責「估算」，「檔案實際上沒有那麼多行」這件事由後續的
+        # reservoir_sample_lines 自動處理（回傳全部現有的行，見上面
+        # TestReservoirSampleLines.test_returns_all_lines_when_file_has_fewer_than_k）。
+        assert result > 10
+
+
+
     """MANIFEST.md 是我們對「這份抽樣資料怎麼來的」的唯一書面記錄，格式
     要穩定、內容要完整，這樣半年後回頭看才知道這份資料是怎麼產生的。
     """
