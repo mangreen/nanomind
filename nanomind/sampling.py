@@ -114,6 +114,57 @@ def compute_sha256(path: str | Path, chunk_size: int = 1024 * 1024) -> str:
     return hasher.hexdigest()
 
 
+def estimate_line_count_for_target_size(
+    path: str | Path, target_bytes: int, probe_lines: int = 5000
+) -> int:
+    """把「我想要大約幾個 bytes 的資料」換算成「該抽幾行」。
+
+    ## 為什麼需要這個函式
+    對使用者來說，「我想要 10MB 的訓練資料」是很自然的想法，但
+    `reservoir_sample_lines` 需要的參數是「行數」而不是「大小」，因為
+    抽樣演算法本身是逐行運作的。這個函式負責中間的換算：先「偷看」檔案
+    前面一小段（預設前 5000 行），算出平均每行大概幾個 bytes，再用
+    `目標 bytes 數 ÷ 平均每行 bytes 數` 反推應該抽幾行。
+
+    這只是「估算」，不是精確計算——因為 minimind 的原始資料每一行長度
+    本來就不完全一樣（有的句子長、有的短），只看前面一小段去推算整個
+    檔案的平均值，本來就會有誤差。但對「我大概想要 10MB 還是 3MB」這種
+    量級的決策來說，這個誤差完全可以接受。
+
+    Args:
+        path: 來源檔案路徑。
+        target_bytes: 希望最終抽樣結果大約是幾個 bytes。
+        probe_lines: 用來估算平均行長度的「偷看」行數，預設 5000 行；
+            如果檔案本身行數比這個數字還少，就用檔案裡實際存在的所有
+            行來估算（不會因為檔案不夠長而出錯）。
+
+    Returns:
+        估算出來、建議傳給 `reservoir_sample_lines` 的 k 值（行數）。
+        這個數字理論上可能超過檔案的實際總行數（例如目標檔案大小遠超過
+        來源檔案本身），這是正常且預期的行為，交給
+        `reservoir_sample_lines` 自動處理即可（它遇到 k 超過實際行數時，
+        會回傳檔案裡的全部行，不會報錯）。
+    """
+    total_bytes_probed = 0
+    lines_probed = 0
+
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            total_bytes_probed += len(line.encode("utf-8"))
+            lines_probed += 1
+            if lines_probed >= probe_lines:
+                break
+
+    if lines_probed == 0:
+        # 檔案是空的，沒有任何一行可以拿來估算平均長度，抽 0 行是唯一
+        # 合理的答案（沒有資料可抽）。
+        return 0
+
+    average_bytes_per_line = total_bytes_probed / lines_probed
+    estimated_lines = round(target_bytes / average_bytes_per_line)
+    return max(estimated_lines, 1)
+
+
 def write_manifest_entry(
     manifest_path: str | Path,
     *,
