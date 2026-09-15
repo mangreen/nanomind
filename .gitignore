@@ -4,6 +4,8 @@ __pycache__/
 .venv/
 .venv*/
 *.egg-info/
+.pytest_cache/
+.ruff_cache/
 
 # --- NanoMind 大型/衍生資料，不進 git ---
 dataset/raw/*.jsonl
