@@ -22,6 +22,8 @@ char-level tokenizer 就會有這個困擾）。這也是本檔案的測試特�
 
 import json
 
+import pytest
+
 from nanomind.tokenizer import (
     SPECIAL_TOKENS,
     extract_text_from_record,
@@ -136,19 +138,39 @@ def _make_rich_fixture_corpus(tmp_path):
 
 class TestTrainBpeTokenizer:
     """訓練流程本身的測試。這裡故意用很小的 vocab_size（例如 300），
-    這樣測試可以在幾百毫秒內跑完，不用真的訓練到 Tier1 的 1536——
-    真正的 1536 詞表訓練，要等 Phase 2 的使用者拿到真實資料後才會執行
-    （見 docs/reports/phase-2.md）。
+    這樣測試可以快速跑完，不用真的訓練到 Tier1 的 1536——真正的 1536
+    詞表訓練，要等 Phase 2 的使用者拿到真實資料後才會執行（見
+    docs/reports/phase-2.md）。
+
+    這個 class 底下的所有測試，都是在檢查「同一個訓練好的 tokenizer」的
+    不同性質（vocab 大小、特殊 token、各種文字的 round-trip），彼此互相
+    獨立、不會互相影響結果，所以用 `scope="module"` 的 fixture **只訓練
+    一次**、共用給所有測試用，而不是每個測試都重新訓練一次。
+
+    重構前：13 個測試裡有 6 個各自呼叫一次 `train_bpe_tokenizer`，
+    全部跑完要 47 秒。重構後：只訓練 1 次，全部測試共用，大幅縮短
+    測試時間，且不影響測試涵蓋的行為（因為這些測試本來就只是「唯讀」
+    地檢查同一個訓練結果的不同面向，不會互相干擰）。
     """
 
-    def test_vocab_size_is_within_requested_bound(self, tmp_path):
-        corpus_path = _make_rich_fixture_corpus(tmp_path)
-        output_dir = tmp_path / "tokenizer_out"
+    @pytest.fixture(scope="module")
+    def tokenizer(self, tmp_path_factory):
+        """訓練一次、給這個 class 底下所有測試共用的 tokenizer。
 
-        tokenizer = train_bpe_tokenizer(
+        用 `tmp_path_factory`（而不是一般測試常用的 `tmp_path`）是因為
+        `tmp_path` 預設是「每個測試函式各自獨立」的暫存目錄（function
+        scope），沒辦法跨測試共用；`tmp_path_factory` 則可以在
+        `scope="module"` 的 fixture 裡手動建立一個「整個模組共用」的
+        暫存目錄。
+        """
+        tmp_dir = tmp_path_factory.mktemp("tokenizer_shared")
+        corpus_path = _make_rich_fixture_corpus(tmp_dir)
+        output_dir = tmp_dir / "tokenizer_out"
+        return train_bpe_tokenizer(
             corpus_paths=[corpus_path], vocab_size=300, output_dir=output_dir
         )
 
+    def test_vocab_size_is_within_requested_bound(self, tokenizer):
         # 用「不超過」而不是「剛好等於」斷言：BPE 訓練器會盡量合併到接近
         # 目標，但如果語料本身的變化不夠多，可能達不到，這是正常現象，
         # 不是 bug。至少要大於「byte-level 的 256 個基礎位元組 + 特殊
@@ -156,55 +178,30 @@ class TestTrainBpeTokenizer:
         vocab_size = tokenizer.vocab_size
         assert 256 + len(SPECIAL_TOKENS) <= vocab_size <= 300
 
-    def test_special_tokens_are_present_in_trained_vocab(self, tmp_path):
-        corpus_path = _make_rich_fixture_corpus(tmp_path)
-        output_dir = tmp_path / "tokenizer_out"
-
-        tokenizer = train_bpe_tokenizer(
-            corpus_paths=[corpus_path], vocab_size=300, output_dir=output_dir
-        )
-
+    def test_special_tokens_are_present_in_trained_vocab(self, tokenizer):
         vocab = tokenizer.get_vocab()
         for special in SPECIAL_TOKENS:
             assert special in vocab, f"特殊 token {special!r} 沒有出現在訓練好的詞表裡"
 
-    def test_english_text_roundtrips_losslessly(self, tmp_path):
-        corpus_path = _make_rich_fixture_corpus(tmp_path)
-        output_dir = tmp_path / "tokenizer_out"
-        tokenizer = train_bpe_tokenizer(
-            corpus_paths=[corpus_path], vocab_size=300, output_dir=output_dir
-        )
-
+    def test_english_text_roundtrips_losslessly(self, tokenizer):
         original = "The quick brown fox jumps over the lazy dog."
         encoded = tokenizer.encode(original)
         decoded = tokenizer.decode(encoded)
         assert decoded == original
 
-    def test_chinese_text_roundtrips_losslessly(self, tmp_path):
+    def test_chinese_text_roundtrips_losslessly(self, tokenizer):
         # 這是「中英文編碼正確」這個 Phase 2 過關條件裡，中文的那一半。
         # 中文字元在 UTF-8 裡是多位元組組成的，byte-level BPE 如果實作
         # 有 bug，這裡最容易抓到。
-        corpus_path = _make_rich_fixture_corpus(tmp_path)
-        output_dir = tmp_path / "tokenizer_out"
-        tokenizer = train_bpe_tokenizer(
-            corpus_paths=[corpus_path], vocab_size=300, output_dir=output_dir
-        )
-
         original = "今天天氣真好，適合出去走走。"
         encoded = tokenizer.encode(original)
         decoded = tokenizer.decode(encoded)
         assert decoded == original
 
-    def test_mixed_chinese_english_and_unseen_text_roundtrips(self, tmp_path):
+    def test_mixed_chinese_english_and_unseen_text_roundtrips(self, tokenizer):
         # 更嚴格的測試：故意用「訓練語料裡完全沒出現過」的句子，確保
         # byte-level 的「保底能力」（沒看過的內容也能無損還原）是真的
         # 有效，不是只有看過的句子才能還原。
-        corpus_path = _make_rich_fixture_corpus(tmp_path)
-        output_dir = tmp_path / "tokenizer_out"
-        tokenizer = train_bpe_tokenizer(
-            corpus_paths=[corpus_path], vocab_size=300, output_dir=output_dir
-        )
-
         original = "這句話 mix 中英文，還有從沒看過的內容 🎉 123！"
         encoded = tokenizer.encode(original)
         decoded = tokenizer.decode(encoded)
