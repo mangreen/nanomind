@@ -37,4 +37,25 @@
 - `.gitignore` 虛擬環境規則改用萬用字元，修正 `git add -A` 誤加
   `.venv-dev/` 的問題
 
-## [Unreleased] - Phase 2
+## [Phase 2] - 2026-09-16 - Tokenizer + 資料裁切（工程部分完成，等待使用者真實資料執行）
+
+### Added
+- `nanomind/sampling.py`：reservoir sampling、串流 SHA256、
+  MANIFEST.md 寫入
+- `scripts/sample_dataset.py`：資料抽樣 CLI（支援 `--lines` 或
+  `--target-mb`）
+- `nanomind/tokenizer.py`：Byte-Level BPE tokenizer 訓練/載入，特殊
+  token `<unk>/<pad>/<|im_start|>/<|im_end|>`
+- `scripts/train_tokenizer.py`：tokenizer 訓練 CLI
+- `docs/decisions/MEM-0002-tokenizer-strategy.md`
+
+### Verified（用合成假資料，因沙盒無法下載 minimind 官方資料集）
+- 抽樣：行數正確、seed 可重現、邊界情況正確處理
+- tokenizer：中文/英文/中英混合＋未見過內容皆無損 round-trip
+
+### Pending（需要使用者在自己機器上執行才能關閉 Phase 2）
+- 下載 minimind 官方 pretrain_t2t_mini.jsonl / sft_t2t_mini.jsonl
+- 執行 sample_dataset.py 產生真實的 nano_pretrain.jsonl / nano_sft.jsonl
+- 執行 train_tokenizer.py 訓練真實的 Tier1 tokenizer（vocab_size=1536）
+
+## [Unreleased] - Phase 3
