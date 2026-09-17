@@ -1,10 +1,27 @@
 # Phase 2 報告：Tokenizer + 資料裁切
 
-## 目前狀態：工程部分已完成並測試通過，等待真實資料執行結果
+## ✅ 狀態：已關閉（2026-09-17）
 
-跟 Phase 0 一樣採兩軌並行：minimind 官方資料集（ModelScope/HuggingFace）
-的下載網域不在我這邊沙盒環境的網路白名單裡，所以「用真實資料跑一次」
-這件事需要在您的機器上完成。
+在使用者機器上用真實 minimind 資料集驗證：
+
+| 項目 | 結果 |
+|---|---|
+| nano_pretrain.jsonl | 13,927 行，12.95 MB（目標 10MB，估算誤差約 30%，可接受） |
+| nano_sft.jsonl | 1,106 行，2.01 MB（目標 3MB） |
+| Tier1 tokenizer vocab_size | **1536 / 1536（剛好命中目標上限）** |
+| Round-trip 檢查 | 中文/英文皆通過 |
+| pytest | 42 passed in 5.31s |
+| ruff check | All checks passed |
+
+完整數字與分析見 `docs/decisions/MEM-0002-tokenizer-strategy.md` 的
+「實際執行結果」區塊。`dataset/raw/MANIFEST.md` 記錄了完整的來源檔案
+雜湊與抽樣參數。`nanomind_artifacts/tokenizer_tier1/`（tokenizer 本身）
+刻意不進 git，因為 BPE 訓練無隨機性、完全可從 MANIFEST.md 記錄的資訊
+重現，詳見 MEM-0002。
+
+---
+
+（以下為原始 Phase 2 執行報告，保留作為記錄）
 
 ## 我這邊已經完成、並用合成資料測試驗證的部分
 

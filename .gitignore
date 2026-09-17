@@ -16,6 +16,10 @@ checkpoints/
 *.pt
 *.bin
 *.safetensors
+# tokenizer/模型等訓練產物：這些都能從 git 裡已經記錄的東西（原始資料的
+# SHA256+seed、訓練程式碼本身）完全重現（BPE 訓練本身沒有隨機性），
+# 不需要把產物本身也存進 git，維持 repo 精簡。
+nanomind_artifacts/
 
 # --- 下載暫存 ---
 *.whl

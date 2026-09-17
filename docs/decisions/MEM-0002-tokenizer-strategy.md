@@ -86,3 +86,50 @@ token 是根據「已經確定會用到」的需求（SFT chat template）決定
 任何時候要理解「NanoMind 的 tokenizer 為什麼長這樣」、或是要決定「要不要
 加新的特殊 token」，先看這份文件；原始的成本效益數字計算過程看
 MEM-0000。
+
+## ✅ 實際執行結果（2026-09-17，使用者機器上的真實 minimind 資料集）
+
+### 資料抽樣（scripts/sample_dataset.py）
+| 目標檔案 | 目標大小 | 估算抽樣行數 | 實際抽樣行數 | 實際大小 |
+|---|---|---|---|---|
+| nano_pretrain.jsonl | ~10 MB | 13,927 | 13,927 | 12.95 MB |
+| nano_sft.jsonl | ~3 MB | 1,106 | 1,106 | 2.01 MB |
+
+`estimate_line_count_for_target_size` 的估算跟實際檔案大小有落差（尤其
+pretrain 那份，12.95MB 比目標 10MB 多了約 30%），代表 minimind 原始
+資料裡「行長度分佈」比我們合成測試用的假資料更不均勻（真實文字長短
+差異大，前面探測的樣本沒能完全代表整個檔案的平均值）。這個落差在可
+接受範圍內，不影響後續使用，暫不需要調整；如果之後想要更精準，可以
+把 `probe_lines` 參數調大，或改用 `--lines` 直接指定精確行數。
+
+完整的來源檔案 SHA256、seed、行數記錄在 `dataset/raw/MANIFEST.md`
+（兩個來源檔案分別是 1.2GB 的 `pretrain_t2t_mini.jsonl` 與 1.6GB 的
+`sft_t2t_mini.jsonl`，皆用 seed=42 抽樣）。
+
+### Tokenizer 訓練（scripts/train_tokenizer.py）
+- 語料來源：`nano_pretrain.jsonl` + `nano_sft.jsonl`（合計約 15MB）
+- **實際詞表大小：1536 / 1536（剛好命中目標上限）**——代表這份約 15MB
+  的中英夾雜語料，變化豐富度足夠支撐 BPE 訓練到完整目標大小，不像
+  Phase 2 開發階段用的合成測試語料（vocab_size 上限 300）那樣可能提早
+  停止。
+- Round-trip 檢查（英文 "Hello, NanoMind!" 與中文「你好，NanoMind！」）
+  皆通過，編碼再解碼後與原文完全一致。
+- 輸出位置：`nanomind_artifacts/tokenizer_tier1/`（內含 `tokenizer.json`
+  與 HuggingFace `PreTrainedTokenizerFast` 所需的設定檔）。
+
+### 測試與 Lint
+```
+pytest: 42 passed in 5.31s
+ruff check .: All checks passed!
+```
+
+### 狀態：**Phase 2 已關閉**
+
+### 為什麼 `nanomind_artifacts/tokenizer_tier1/` 本身不進 git
+BPE 訓練過程完全沒有隨機性（合併規則純粹由詞頻統計決定，不像
+`reservoir_sample_lines` 需要 seed），所以只要有「原始 minimind 資料檔
+的 SHA256（已記錄在 MANIFEST.md，可驗證下載到的是不是同一份）+
+抽樣 seed（42，已記錄）+ 訓練程式碼本身（已在 git 裡）」，任何人都能
+100% 重現出一模一樣的 tokenizer 檔案。既然完全可重現，就不需要把
+訓練產物本身也存進 git，維持 repo 精簡——這跟 `dataset/*.jsonl` 不進
+git 是同一個道理（見 `.gitignore` 的註解）。

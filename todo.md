@@ -1,25 +1,22 @@
-# todo.md（Active Sprint: Phase 2 收尾中，等待使用者真實資料執行結果）
+# todo.md（Active Sprint: Phase 3）
 
 ## Phase 0：環境建置與基準驗證 — ✅ 已完成（branch: `phase-0-env-setup`）
 ## Phase 1：骨架與規範 — ✅ 已完成（已 merge 進 main）
+## Phase 2：Tokenizer + 資料裁切 — ✅ 已完成（branch: `phase-2-tokenizer-and-data`，待 merge）
+- 真實資料：nano_pretrain.jsonl 13,927 行/12.95MB、nano_sft.jsonl 1,106行/2.01MB
+- Tier1 tokenizer：vocab_size 1536/1536（滿版命中）
+- pytest 42 passed, ruff check 全過
 
-## Phase 2：Tokenizer + 資料裁切 — 🟡 工程部分完成，等待使用者操作
-- [x] 開新 branch `phase-2-tokenizer-and-data`
-- [x] `nanomind/sampling.py`（reservoir sampling / SHA256 / manifest 寫入），9+2=11 tests
-- [x] `scripts/sample_dataset.py` CLI，4 tests
-- [x] `nanomind/tokenizer.py`（Byte-Level BPE 訓練/載入），13 tests
-- [x] `scripts/train_tokenizer.py` CLI，3 tests
-- [x] `docs/decisions/MEM-0002-tokenizer-strategy.md`
-- [x] `docs/reports/phase-2.md`（含給使用者的操作步驟）
-- [ ] **需要使用者動作**：下載 minimind 官方資料集、執行
-      `sample_dataset.py` x2、`train_tokenizer.py` x1，回報結果
-- [ ] 依真實結果補完 MEM-0002，正式關閉 Phase 2 並 merge 進 main
-
-## Phase 3（下一步預告，尚未開始）
+## Phase 3：NanoMind 模型架構（下一步）
 - [ ] 開新 branch `phase-3-model-architecture`
 - [ ] vendor 並簡化 minimind 的 model_minimind.py 成 nanomind/model.py
-      （移除 MoE 分支）
-- [ ] 用 Phase 1 的 NanoMindConfig 定義 config/tier0.json / tier1.json /
-      tier2.json
-- [ ] forward pass shape 測試、causal mask 正確性測試、參數量驗證測試
+      （移除 MoE 分支，理由見 MEM-0001）
+- [ ] 用 Phase 1 的 NanoMindConfig 定義 config/tier0.json（vocab=512,
+      不需真實tokenizer）/ tier1.json（vocab=1536，對應真實 tokenizer）/
+      tier2.json（vocab=4096，Phase 10 才用）
+- [ ] forward pass shape 測試
+- [ ] causal mask 正確性測試（用簡單可驗證的合成序列）
+- [ ] 參數量驗證測試（斷言 numel 在預期範圍，並跟 Phase 0 bench_cpu.py
+      的 proxy 估算對照）
 - [ ] checkpoint save/load round-trip 測試
+- [ ] RoPE/GQA 正確性測試
