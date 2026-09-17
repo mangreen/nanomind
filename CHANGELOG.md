@@ -37,4 +37,27 @@
 - `.gitignore` 虛擬環境規則改用萬用字元，修正 `git add -A` 誤加
   `.venv-dev/` 的問題
 
-## [Unreleased] - Phase 2
+## [Phase 2] - 2026-09-17 - Tokenizer + 資料裁切（已關閉）
+
+### Added
+- `nanomind/sampling.py`：reservoir sampling、串流 SHA256、
+  MANIFEST.md 寫入
+- `scripts/sample_dataset.py`：資料抽樣 CLI（支援 `--lines` 或
+  `--target-mb`）
+- `nanomind/tokenizer.py`：Byte-Level BPE tokenizer 訓練/載入，特殊
+  token `<unk>/<pad>/<|im_start|>/<|im_end|>`
+- `scripts/train_tokenizer.py`：tokenizer 訓練 CLI
+- `docs/decisions/MEM-0002-tokenizer-strategy.md`
+- `dataset/raw/MANIFEST.md`：真實資料抽樣記錄
+
+### Verified（用合成假資料於開發階段，真實資料於使用者機器驗證）
+- 開發階段：中文/英文/中英混合＋未見過內容皆無損 round-trip（42 tests）
+- 真實資料（2026-09-17）：nano_pretrain.jsonl 13,927行/12.95MB、
+  nano_sft.jsonl 1,106行/2.01MB，Tier1 tokenizer vocab_size 1536/1536
+  （滿版命中），pytest 42 passed，ruff check 全過
+
+### Decisions
+- `nanomind_artifacts/`（tokenizer 訓練產物）不進 git：BPE 訓練無
+  隨機性，可完全從 MANIFEST.md 記錄的來源雜湊+seed+程式碼重現
+
+## [Unreleased] - Phase 3
